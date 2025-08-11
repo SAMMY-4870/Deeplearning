@@ -1,0 +1,35 @@
+task_type: image
+DATA_ROOT: ./data/images
+output_dir: ./outputs/image_xception
+seed: 42
+num_workers: 4
+use_amp: true
+
+model:
+  name: xception
+  pretrained: true
+  in_chans: 3
+  num_classes: 1
+  drop_rate: 0.2
+
+train:
+  epochs: 10
+  batch_size: 32
+  lr: 3e-4
+  weight_decay: 1e-4
+  optimizer: adamw
+  scheduler: cosine
+  warmup_epochs: 1
+  label_smoothing: 0.0
+
+image_size: 299
+
+augment:
+  # Basic augmentations
+  hflip_prob: 0.5
+  color_jitter: [0.1, 0.1, 0.1, 0.05]
+
+paths:
+  train: train
+  val: val
+  test: test
