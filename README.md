@@ -1,92 +1,87 @@
-# AI vs Real Media Detector (Image + Video)
+# AI vs Real Media Detector
 
-A PyTorch project to classify whether an input image or video is AI-generated (fake) or real. Supports:
-- Image classification using Xception backbone (`timm`)
-- Video classification using CNN feature extractor + LSTM temporal model
+A full-stack project to detect whether an uploaded image or video is likely AI-generated (deepfake/synthetic) or real.
+
+- Backend: FastAPI (Python) + PyTorch
+- Models: Xception (images), Xception + LSTM (videos)
+- Frontend: Simple HTML/JS uploader
+
+Note: Models ship untrained by default. You must train on your dataset to get meaningful predictions.
 
 ## Setup
+
+1. Create a Python environment and install dependencies:
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install --upgrade pip
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
 ```
 
-## Dataset Layout
+2. (Optional) Set environment variables to point to your trained weights:
 
-You can use any dataset arranged as:
-
-Images:
-```
-DATA_ROOT/
-  train/
-    real/
-      img_001.jpg
-      ...
-    fake/
-      img_101.jpg
-      ...
-  val/
-    real/
-    fake/
-  test/
-    real/
-    fake/
-```
-
-Videos:
-```
-DATA_ROOT/
-  train/
-    real/
-      vid_001.mp4
-      ...
-    fake/
-      vid_201.mp4
-      ...
-  val/
-    real/
-    fake/
-  test/
-    real/
-    fake/
-```
-
-Recommended public datasets: DFDC, FaceForensics++, Celeb-DF (follow their licenses and usage terms).
-
-## Quick Start
-
-Train an image model (Xception):
 ```bash
-python -m src.train --config configs/image_xception.yaml DATA_ROOT=/path/to/images
+export IMAGE_WEIGHTS_PATH=/workspace/checkpoints/xception_image.pt
+export VIDEO_WEIGHTS_PATH=/workspace/checkpoints/video_lstm.pt
 ```
 
-Train a video model (CNN+LSTM):
+## Run API
+
 ```bash
-python -m src.train --config configs/video_cnn_lstm.yaml DATA_ROOT=/path/to/videos
+uvicorn backend.api.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Evaluate a trained checkpoint:
+Open the frontend by serving the `frontend` folder in any static server, or simply open `frontend/index.html` in your browser and set `API_BASE` if needed:
+
+```html
+<script>
+  window.API_BASE = 'http://localhost:8000';
+</script>
+```
+
+## Train
+
+Prepare datasets with the following structure:
+
+```
+/your_image_dataset
+  /real
+    img1.jpg, ...
+  /ai
+    img2.jpg, ...
+
+/your_video_dataset
+  /real
+    clip1.mp4, ...
+  /ai
+    clip2.mp4, ...
+```
+
+Then run:
+
 ```bash
-python -m src.eval --config configs/image_xception.yaml CHECKPOINT_PATH=/path/to/checkpoint.pt DATA_ROOT=/path/to/images
+# Image model
+python backend/train/train_image.py --data /your_image_dataset --out /workspace/checkpoints/xception_image.pt --epochs 3
+
+# Video model
+python backend/train/train_video.py --data /your_video_dataset --out /workspace/checkpoints/video_lstm.pt --epochs 2 --num_frames 32
 ```
 
-Run inference on a single file:
-```bash
-# Image
-python -m src.infer --config configs/image_xception.yaml --path /path/to/file.jpg --checkpoint /path/to/checkpoint.pt
+After training, restart the API with the environment variables pointing to the saved weights.
 
-# Video
-python -m src.infer --config configs/video_cnn_lstm.yaml --path /path/to/file.mp4 --checkpoint /path/to/checkpoint.pt
+## Endpoints
+
+- POST `/predict/image` - form-data field `file` (JPEG/PNG/WebP)
+- POST `/predict/video` - form-data field `file` (MP4/MKV/AVI/MOV), query or form `num_frames` optional
+
+Both return:
+
+```json
+{ "label": "AI-generated" | "Real", "is_ai": true|false, "confidence": 0.0-1.0, "detail": "optional warning" }
 ```
-
-## Configs
-
-See `configs/` for examples. You can override any config key from the CLI using `KEY=VALUE` pairs.
 
 ## Notes
-- Binary labels: `real` → 0, `fake` → 1
-- Uses BCEWithLogits loss; metrics include accuracy, F1, and AUC
-- Mixed precision supported via `use_amp: true`
-- CPU/GPU auto-detection
+
+- For production, secure CORS and file handling, add rate limiting, logging, and monitoring.
+- Consider augmentations and class balancing for better training.
+- Add calibration or a threshold sweep to tune precision/recall depending on your risk appetite.

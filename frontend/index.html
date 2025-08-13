@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI vs Real Media Detector</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; padding: 24px; max-width: 900px; margin: 0 auto; }
+      .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+      h1 { margin-top: 0; }
+      .result { margin-top: 12px; font-weight: 600; }
+      .ai { color: #b91c1c; }
+      .real { color: #065f46; }
+      .warn { color: #b45309; font-size: 0.95em; margin-top: 8px; }
+      button { padding: 10px 16px; border-radius: 8px; border: 1px solid #1f2937; background: #111827; color: white; cursor: pointer; }
+      button:disabled { opacity: 0.6; cursor: not-allowed; }
+      .row { display: flex; gap: 24px; flex-wrap: wrap; }
+      .row > .card { flex: 1; min-width: 320px; }
+      .small { color: #6b7280; font-size: 0.9em; }
+    </style>
+  </head>
+  <body>
+    <h1>AI vs Real Media Detector</h1>
+    <p class="small">Upload an image or video. The model will predict whether it's likely AI-generated or real.</p>
+
+    <div class="row">
+      <div class="card">
+        <h3>Image</h3>
+        <input type="file" id="imageInput" accept="image/*" />
+        <div>
+          <button id="imageBtn">Analyze Image</button>
+        </div>
+        <div id="imageResult" class="result"></div>
+        <div id="imageWarn" class="warn"></div>
+      </div>
+
+      <div class="card">
+        <h3>Video</h3>
+        <input type="file" id="videoInput" accept="video/*" />
+        <div>
+          <button id="videoBtn">Analyze Video</button>
+        </div>
+        <div id="videoResult" class="result"></div>
+        <div id="videoWarn" class="warn"></div>
+      </div>
+    </div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# Checkpoints and data
+checkpoints/
+*.pt
+*.pth
+/data/
+
+# OS/IDE
+.DS_Store
+.idea/
+.vscode/
+
+# Node
+node_modules/
